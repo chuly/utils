@@ -1,6 +1,8 @@
 package com.bbq.util.selenium;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -18,17 +20,24 @@ import org.apache.http.util.EntityUtils;
 public class HttpClientProxy {
 
 	public static void main(String[] args) throws Exception {
-//		checkProxy("http://s.ip-cdn.com/css/bootstrap.min.css",new HttpHost("113.251.126.71", 8998, "http"));
-//		System.out.println("\b\b====================================================\b\b");
+//		boolean result= checkProxy(new HttpHost("223.214.10.29", 8998, "http"));
+//		System.out.println(result + "\b\b====================================================\b\b");
 		String resp = sendGetRequest("http://s.ip-cdn.com/css/bootstrap.min.css");
 		System.out.println(resp);
 	}
 
-	public static void checkProxy(String url,HttpHost proxyHost) throws Exception {
+	public static boolean checkProxy(HttpHost proxyHost) throws Exception {
+//		String url ="http://s.ip-cdn.com/css/bootstrap.min.css";
+//		String url ="http://1212.ip138.com/ic.asp";
+		String url ="1212.ip138.com";
+		String checkStr = "您的IP地址";
 		String result = null;
 		HttpHost target = new HttpHost(url, 80, "http");
-		HttpGet httpGet = new HttpGet("/");
-
+		HttpGet httpGet = new HttpGet("/ic.asp");
+//		Map<String, String> headMap = createHeader("1212.ip138.com");
+//		for(Map.Entry<String, String> e : headMap.entrySet()){
+//			httpGet.addHeader(e.getKey(), e.getValue());
+//		}
 		RequestConfig config = RequestConfig.custom()
 				.setConnectTimeout(10000)
 				.setSocketTimeout(5000)
@@ -41,12 +50,33 @@ public class HttpClientProxy {
 		HttpResponse response = hc.execute(target, httpGet);
 		int status = response.getStatusLine().getStatusCode();
 		if (status == 200) {// 如果状态码为200,就是正常返回
-			result = EntityUtils.toString(response.getEntity());
+			result = EntityUtils.toString(response.getEntity(),"GBK");
+//			System.out.println(result);
+			if(result.indexOf(checkStr)>=0){
+				String ss = result.substring(result.indexOf("<center>")+8,result.indexOf("</center>"));
+				System.out.println(ss);
+				return true;
+			}
+			return false;
 		} else {
 			System.out.println("错误的状态 ： status=" + status);
-			throw new Exception("错误的状态 ： status=" + status);
 		}
-		System.out.println(result);
+		return false;
+	}
+	
+	private static Map<String, String> createHeader(String host){
+		Map<String, String> headMap = new HashMap();
+		headMap.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+		headMap.put("Accept-Encoding", "gzip, deflate, sdch");
+		headMap.put("Accept-Language", "zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4,ja;q=0.2");
+		headMap.put("Connection", "keep-alive");
+//		headMap.put("Cookie", "_qqq_uuid_=\"2|1:0|10:1488700163|10:_qqq_uuid_|56:ZDdjMTljZTRmZmZlMzZiMzA1NDI3ZGE3NTU1ODM3MGE2MmQ4NDM3Zg==|9bd0755c25e27aac82fa5c3b0a0aefca52f948137affe1ba6785bb37b4319b8c\"; Hm_lvt_18a964a3eb14176db6e70f1dd0a3e557=1488701485; _xsrf=2|9d7f9f6a|a883e1a963cdd88bb38665994182d6d6|1488701672; __cur_art_index=7801");
+		headMap.put("Host", host);
+//		headMap.put("Referer", "http://"+host+"/");
+		headMap.put("Upgrade-Insecure-Requests", "1");
+		headMap.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36");
+		
+		return headMap;
 	}
 	public static String sendGetRequest(String urlWithParam) throws Exception {
 		String responseBody = null;

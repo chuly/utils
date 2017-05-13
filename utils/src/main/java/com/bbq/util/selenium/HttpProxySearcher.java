@@ -1,5 +1,9 @@
 package com.bbq.util.selenium;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,14 +13,17 @@ import com.bbq.util.selenium.bean.HttpProxyBean;
 import com.bbq.util.utils.HttpClientUtil;
 import com.bbq.util.utils.freeHttpProxyParser.DailiHtmlParserItf;
 import com.bbq.util.utils.freeHttpProxyParser.KuaidailiHtmlParser;
+import com.bbq.util.utils.freeHttpProxyParser.WuyoudailiHtmlParser;
 import com.bbq.util.utils.freeHttpProxyParser.XicidailiHtmlParser;
 
 public class HttpProxySearcher {
 
 	public static void main(String[] args) throws Exception{
 		
-		List<HttpProxyBean> proxyHostList = searchXiciHttpProxy(1);
-//		System.out.println(JSON.toJSONString(proxyHostList));
+//		List<HttpProxyBean> proxyHostList = searchXiciHttpProxy(1);
+		String orderNo = "a36067644c76e5bf53fe32806b479db1";
+		List<HttpProxyBean> proxyHostList = HttpProxySearcher.searchWuyouHttpProxy(orderNo);
+		System.out.println(JSON.toJSONString(proxyHostList));
 		
 	}
 	/**
@@ -47,6 +54,61 @@ public class HttpProxySearcher {
 		return null;
 	}
 	
+	/**
+	 * 无忧代理 http://www.data5u.com/
+	 */
+	public static List<HttpProxyBean> searchWuyouHttpProxy() throws Exception{
+		String html = searchHttpProxy("www.data5u.com","http://www.data5u.com");
+		if(html != null && html.length()>0){
+			DailiHtmlParserItf pa = new WuyoudailiHtmlParser();
+			List<HttpProxyBean> list = pa.parseList(html);
+			System.out.println(JSON.toJSONString(list));
+			return list;
+		}
+		return null;
+	}
+	public static List<HttpProxyBean> searchWuyouHttpProxy(String orderNo) throws Exception{
+		java.net.URL url = new java.net.URL("http://api.ip.data5u.com/dynamic/get.html?order=" + orderNo + "&ttl");
+    	HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+    	connection.setConnectTimeout(3000);
+    	connection = (HttpURLConnection)url.openConnection();
+    	
+        InputStream raw = connection.getInputStream();  
+        InputStream in = new BufferedInputStream(raw);  
+        byte[] data = new byte[in.available()];
+        int bytesRead = 0;  
+        int offset = 0;  
+        while(offset < data.length) {  
+            bytesRead = in.read(data, offset, data.length - offset);  
+            if(bytesRead == -1) {  
+                break;  
+            }  
+            offset += bytesRead;  
+        }  
+        in.close();  
+        raw.close();
+        String respStr = new String(data, "UTF-8");
+        System.out.println("获取的ip："+respStr);
+		String[] res = respStr.split("\n");
+		List<HttpProxyBean> ipList = new ArrayList<HttpProxyBean>();
+		for (String ip : res) {
+			try {
+				String[] parts = ip.split(",");
+				if (Integer.parseInt(parts[1]) > 0) {
+					HttpProxyBean hb = new HttpProxyBean();
+					String[] ipport = parts[0].split(":");
+					hb.setIp(ipport[0]);
+					hb.setPort(ipport[1]);
+					ipList.add(hb);
+				}else{
+					System.out.println("此ip有效期已过："+ip);
+				}
+			} catch (Exception e) {
+			}
+		}
+		return ipList;
+	}
+	
 	private static String searchHttpProxy(String host,String url) throws Exception{
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept", "text/javascript, text/html, application/xml, text/xml, */*");
@@ -59,4 +121,5 @@ public class HttpProxySearcher {
 		headMap.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36");
 		return HttpClientUtil.execGet(url,headMap);
 	}
+	
 }
