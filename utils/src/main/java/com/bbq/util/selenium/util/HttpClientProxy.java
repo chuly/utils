@@ -1,4 +1,4 @@
-package com.bbq.util.selenium;
+package com.bbq.util.selenium.util;
 
 import java.io.IOException;
 import java.util.HashMap;

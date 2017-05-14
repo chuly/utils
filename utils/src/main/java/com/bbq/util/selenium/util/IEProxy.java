@@ -1,4 +1,4 @@
-package com.bbq.util.selenium;
+package com.bbq.util.selenium.util;
 
 public class IEProxy {
 

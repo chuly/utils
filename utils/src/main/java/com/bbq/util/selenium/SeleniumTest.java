@@ -3,9 +3,10 @@ package com.bbq.util.selenium;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpHost;
 import org.openqa.selenium.By;
@@ -18,10 +19,14 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.bbq.util.selenium.bean.HttpProxyBean;
+import com.bbq.util.selenium.util.HttpClientProxy;
+import com.bbq.util.selenium.util.HttpProxySearcher;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 
 public class SeleniumTest extends Thread{
+	private static Map<String,String> usedProxy = Maps.newHashMap();
 	public static void main(String[] args) {
 		try {
 //			new HttpProxySearcherThread(orderNo).start();
@@ -47,6 +52,12 @@ public class SeleniumTest extends Thread{
 			for (HttpProxyBean proxyHost : list) {
 				try {
 					log("成功数/总数：" + curSuccessCount + "/" + ++curTotleCount +",本页代理[当前index/总zide]："+ ++a +"/"+list.size());
+					String key = proxyHost.getIp()+":"+proxyHost.getPort();
+					if(usedProxy.containsKey(key)){
+						log("此代理["+key+"]已使用过，忽略");
+						continue;
+					}
+					usedProxy.put(key, null);
 					boolean r = doOne(proxyHost);
 					if(r){
 						curSuccessCount++;
@@ -137,25 +148,43 @@ public class SeleniumTest extends Thread{
 		cap.setCapability(CapabilityType.ForSeleniumServer.ONLY_PROXYING_SELENIUM_TRAFFIC, true);
 		System.setProperty("http.nonProxyHosts", "localhost");
 		cap.setCapability(CapabilityType.PROXY, proxy);
-		ChromeOptions co = new ChromeOptions();
-		co.addArguments("--start-maximized");
+		
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments("--start-maximized");
+		cap.setCapability(ChromeOptions.CAPABILITY, options);
 		WebDriver dr = new ChromeDriver(cap);
+//		dr.manage().window().maximize(); //将浏览器设置为最大化的状态
+		dr.manage().timeouts().pageLoadTimeout(15, TimeUnit.SECONDS);
+		dr.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		
+		//firefox修改user-agent，chrome无
+//		FirefoxProfile profile = new FirefoxProfile();
+//		profile.addAdditionalPreference("general.useragent.override", "some UA string");
+//		WebDriver driver = new FirefoxDriver(profile);
+		
 		try {
-			dr.get("http://1212.ip138.com/ic.asp");
-			Thread.sleep(1000);
+//			dr.get("http://1212.ip138.com/ic.asp");
+//			Thread.sleep(1000);
 //			dr.get("http://www.biubiuq.cn");
 //			delay(1000, 2000);
 //			dr.findElement(By.linkText("【资源共享】电影都发在这里")).click();
 //			delay(1000, 2000);
 			dr.get("http://www.biubiuq.cn/topic/803?t=c");
+//			log("寻找..");
+//			WebDriverWait wait = new WebDriverWait(dr,10);  
+//	        wait.until(new ExpectedCondition<WebElement>(){  
+//	            public WebElement apply(WebDriver d) {  
+//	                return d.findElement(By.linkText("速度与激情8"));  
+//	            }}).click();  
 			dr.findElement(By.linkText("速度与激情8")).click();
+//			log("已经点击..");
 			delay(2000, 3000);
 			dr.findElement(By.id("free_down_link")).click();
 			delay(1000, 2000);
 			dr.findElement(By.id("free_down_link")).click();
-			System.out.println("下载完成");
+			log("下载完成");
 			delay(1000, 2000);
-			System.out.println("退出");
+			log("退出");
 		} finally {
 			if(dr != null){
 				dr.quit();
