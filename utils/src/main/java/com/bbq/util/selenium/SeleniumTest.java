@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpHost;
+import org.eclipse.jetty.util.log.Log;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
@@ -52,12 +53,6 @@ public class SeleniumTest extends Thread{
 			for (HttpProxyBean proxyHost : list) {
 				try {
 					log("成功数/总数：" + curSuccessCount + "/" + ++curTotleCount +",本页代理[当前index/总zide]："+ ++a +"/"+list.size());
-					String key = proxyHost.getIp()+":"+proxyHost.getPort();
-					if(usedProxy.containsKey(key)){
-						log("此代理["+key+"]已使用过，忽略");
-						continue;
-					}
-					usedProxy.put(key, null);
 					boolean r = doOne(proxyHost);
 					if(r){
 						curSuccessCount++;
@@ -73,8 +68,37 @@ public class SeleniumTest extends Thread{
 		}
 		
 	}
-	
+	int netPage = 1;
 	private List<HttpProxyBean> getProxyHost() throws Exception{
+		List<HttpProxyBean> retList = Lists.newArrayList();
+		while(retList == null || retList.size() == 0){
+			List<HttpProxyBean> list = HttpProxySearcher.searchXiciHttpProxy(1);
+			boolean isNetNew = false;//网站上的代理是否刷新
+			for (HttpProxyBean httpProxyBean : list) {
+				String key = httpProxyBean.getIp()+":"+httpProxyBean.getPort();
+				if(!usedProxy.containsKey(key)){
+					isNetNew = true;
+					break;
+				}
+			}
+			if(!isNetNew){
+				list = HttpProxySearcher.searchXiciHttpProxy(++netPage);
+			}
+			for (HttpProxyBean httpProxyBean : list) {
+				String key = httpProxyBean.getIp()+":"+httpProxyBean.getPort();
+				if(usedProxy.containsKey(key)){
+					log("此代理【"+key+"】已使用，忽略");
+					continue;
+				}else{
+					retList.add(httpProxyBean);
+					usedProxy.put(key, null);
+				}
+			}
+		}
+		return retList;
+	}
+	
+	private List<HttpProxyBean> getProxyHost(int page) throws Exception{
 		List<HttpProxyBean> list = Lists.newArrayList();
 //		// 实时从无忧收费代理去
 //		HttpProxyBean proxyHost = HttpProxySearcherThread.getProxy("a36067644c76e5bf53fe32806b479db1").get(0);
@@ -93,7 +117,16 @@ public class SeleniumTest extends Thread{
 //		list = HttpProxySearcher.searchKuaidailiHttpProxy(1);
 		
 		// 从西祠代理取
-		list = HttpProxySearcher.searchXiciHttpProxy(1);
+		list = HttpProxySearcher.searchXiciHttpProxy(page++);
+		for (HttpProxyBean httpProxyBean : list) {
+			String key = httpProxyBean.getIp()+":"+httpProxyBean.getPort();
+			if(usedProxy.containsKey(key)){
+				log("此代理["+key+"]已使用过，忽略");
+				continue;
+			}
+			usedProxy.put(key, null);
+		}
+		
 		return list;
 	}
 	
