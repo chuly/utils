@@ -3,7 +3,7 @@ package com.bbq.util.msm;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.bbq.util.constEnum.UserAgentEnum;
+import com.bbq.util.constEnum.PCUserAgentEnum;
 import com.bbq.util.utils.HttpClientUtil;
 
 public class MsmHz {
@@ -19,7 +19,7 @@ public class MsmHz {
 				+ phoneNum + "&bdcbid=c0f7dcbf-06d4-4e86-bc95-9c1bbeba456b&callback=_lxb_jsonp_1481886677679_";
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept-Encoding", "gzip");
-		headMap.put("User-Agent", UserAgentEnum.getRandomUserAgent());
+		headMap.put("User-Agent", PCUserAgentEnum.getRandomUserAgent());
 		headMap.put("Host", "lxbjs.baidu.com");
 		headMap.put("Connection", "Keep-Alive");
 		headMap.put("Content-Type", "application/x-www-form-urlencoded");
@@ -37,7 +37,7 @@ public class MsmHz {
 		String urlWithParam = "http://account.autohome.com.cn/AccountApi/CreateMobileCode";
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept-Encoding", "gzip");
-		headMap.put("User-Agent", UserAgentEnum.getRandomUserAgent());
+		headMap.put("User-Agent", PCUserAgentEnum.getRandomUserAgent());
 		headMap.put("Host", "account.autohome.com.cn");
 		headMap.put("Connection", "Keep-Alive");
 		headMap.put("Content-Type", "application/x-www-form-urlencoded");
@@ -57,7 +57,7 @@ public class MsmHz {
 		String urlWithParam = "http://wqb.jsz998.com/user/getmobilevcode";
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept-Encoding", "gzip");
-		headMap.put("User-Agent", UserAgentEnum.getRandomUserAgent());
+		headMap.put("User-Agent", PCUserAgentEnum.getRandomUserAgent());
 		headMap.put("Host", "wqb.jsz998.com");
 		headMap.put("Connection", "Keep-Alive");
 		headMap.put("Content-Type", "application/x-www-form-urlencoded");
@@ -76,7 +76,7 @@ public class MsmHz {
 		String urlWithParam = "http://m.guazi.com/misc/user/?act=register";
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept-Encoding", "gzip");
-		headMap.put("User-Agent", UserAgentEnum.getRandomUserAgent());
+		headMap.put("User-Agent", PCUserAgentEnum.getRandomUserAgent());
 		headMap.put("Host", "m.guazi.com");
 		headMap.put("Connection", "Keep-Alive");
 		headMap.put("Content-Type", "application/x-www-form-urlencoded");
@@ -95,7 +95,7 @@ public class MsmHz {
 		String urlWithParam = "http://myapi.motherbuy.com/index.php?act=login&op=sms";
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept-Encoding", "gzip");
-		headMap.put("User-Agent", UserAgentEnum.getRandomUserAgent());
+		headMap.put("User-Agent", PCUserAgentEnum.getRandomUserAgent());
 		headMap.put("Host", "myapi.motherbuy.com");
 		headMap.put("Connection", "Keep-Alive");
 		headMap.put("Content-Type", "application/x-www-form-urlencoded");
@@ -118,7 +118,7 @@ public class MsmHz {
 		
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept-Encoding", "gzip");
-		headMap.put("User-Agent", UserAgentEnum.getRandomUserAgent());
+		headMap.put("User-Agent", PCUserAgentEnum.getRandomUserAgent());
 		headMap.put("Host", host);
 		headMap.put("Connection", "Keep-Alive");
 		headMap.put("Content-Type", "application/x-www-form-urlencoded");
@@ -139,7 +139,7 @@ public class MsmHz {
 		
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept-Encoding", "gzip");
-		headMap.put("User-Agent", UserAgentEnum.getRandomUserAgent());
+		headMap.put("User-Agent", PCUserAgentEnum.getRandomUserAgent());
 		headMap.put("Host", host);
 		headMap.put("Connection", "Keep-Alive");
 		headMap.put("Content-Type", "application/x-www-form-urlencoded");
@@ -160,7 +160,7 @@ public class MsmHz {
 		
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept-Encoding", "gzip");
-		headMap.put("User-Agent", UserAgentEnum.getRandomUserAgent());
+		headMap.put("User-Agent", PCUserAgentEnum.getRandomUserAgent());
 		headMap.put("Host", host);
 		headMap.put("Connection", "Keep-Alive");
 		headMap.put("Content-Type", "application/x-www-form-urlencoded");
@@ -180,7 +180,7 @@ public class MsmHz {
 		String paramStr = "client_id=qyer_android&client_secret=9fcaae8aefc4f9ac4915&v=1&track_deviceid=864394010002246&track_app_version=7.0.5&track_app_channel=baidu&track_device_info=L50t&track_os=Android4.4.2&app_installtime=1480747518929&country_code=86&mobile="+phoneNum+"";
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept-Encoding", "gzip");
-		headMap.put("User-Agent", UserAgentEnum.getRandomUserAgent());
+		headMap.put("User-Agent", PCUserAgentEnum.getRandomUserAgent());
 		headMap.put("Host", host);
 		headMap.put("Connection", "Keep-Alive");
 		headMap.put("Content-Type", "application/x-www-form-urlencoded");
@@ -201,7 +201,7 @@ public class MsmHz {
 		
 		Map<String, String> headMap = new HashMap();
 		headMap.put("Accept-Encoding", "gzip");
-		headMap.put("User-Agent", UserAgentEnum.getRandomUserAgent());
+		headMap.put("User-Agent", PCUserAgentEnum.getRandomUserAgent());
 		headMap.put("Host", host);
 		headMap.put("Connection", "Keep-Alive");
 		headMap.put("Content-Type", "application/x-www-form-urlencoded");

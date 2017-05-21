@@ -65,8 +65,10 @@ public class HttpClientUtil {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		try {
 			HttpGet httpget = new HttpGet(urlWithParam);
-			for(Map.Entry<String, String> e : headMap.entrySet()){
-				httpget.addHeader(e.getKey(), e.getValue());
+			if(headMap != null && headMap.size() > 0){
+				for(Map.Entry<String, String> e : headMap.entrySet()){
+					httpget.addHeader(e.getKey(), e.getValue());
+				}
 			}
 			System.out.println("Executing request " + httpget.getRequestLine());
 			// Create a custom response handler

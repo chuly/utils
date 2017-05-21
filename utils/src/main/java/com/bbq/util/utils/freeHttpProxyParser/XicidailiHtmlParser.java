@@ -29,10 +29,16 @@ public class XicidailiHtmlParser implements DailiHtmlParserItf{
 					String ip = tds.get(1).text();
 					String port = tds.get(2).text();
 					String addr = tds.get(3).select("a").text();
+					String httpOrHttps = tds.get(5).text();
 					HttpProxyBean hp = new HttpProxyBean();
 					hp.setIp(ip);
 					hp.setPort(port);
 					hp.setAddr(addr);
+					if("http".equalsIgnoreCase(httpOrHttps)){
+						hp.setHttpType("http");
+					}else if("https".equalsIgnoreCase(httpOrHttps)){
+						hp.setHttpType("https");
+					}
 					list.add(hp);
 				}
 			}

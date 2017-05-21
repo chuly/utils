@@ -15,16 +15,18 @@ import com.bbq.util.utils.freeHttpProxyParser.DailiHtmlParserItf;
 import com.bbq.util.utils.freeHttpProxyParser.KuaidailiHtmlParser;
 import com.bbq.util.utils.freeHttpProxyParser.WuyoudailiHtmlParser;
 import com.bbq.util.utils.freeHttpProxyParser.XicidailiHtmlParser;
+import com.google.common.collect.Lists;
 
 public class HttpProxySearcher {
 
 	public static void main(String[] args) throws Exception{
 		
 //		List<HttpProxyBean> proxyHostList = searchXiciHttpProxy(1);
-		String orderNo = "a36067644c76e5bf53fe32806b479db1";
-		List<HttpProxyBean> proxyHostList = HttpProxySearcher.searchWuyouHttpProxy(orderNo);
+//		String orderNo = "a36067644c76e5bf53fe32806b479db1";
+//		List<HttpProxyBean> proxyHostList = HttpProxySearcher.searchWuyouHttpProxy(orderNo);
+//		System.out.println(JSON.toJSONString(proxyHostList));
+		List<HttpProxyBean> proxyHostList = searchXiciAPIHttpProxy();
 		System.out.println(JSON.toJSONString(proxyHostList));
-		
 	}
 	/**
 	 * 快代理 www.kuaidaili.com
@@ -32,7 +34,7 @@ public class HttpProxySearcher {
 	public static List<HttpProxyBean> searchKuaidailiHttpProxy(int page) throws Exception{
 		String html = searchHttpProxy("www.kuaidaili.com","http://www.kuaidaili.com/free/intr/"+page+"/");
 		if(html != null && !"Invalid Page".equals(html) && html.length()>0){
-			DailiHtmlParserItf pa = new KuaidailiHtmlParser();
+			KuaidailiHtmlParser pa = new KuaidailiHtmlParser();
 			List<HttpProxyBean> list = pa.parseList(html);
 			System.out.println(JSON.toJSONString(list));
 			return list;
@@ -46,12 +48,39 @@ public class HttpProxySearcher {
 	public static List<HttpProxyBean> searchXiciHttpProxy(int page) throws Exception{
 		String html = searchHttpProxy("www.xicidaili.com","http://www.xicidaili.com/nn/"+page);
 		if(html != null && !"Invalid Page".equals(html) && html.length()>0){
-			DailiHtmlParserItf pa = new XicidailiHtmlParser();
+			XicidailiHtmlParser pa = new XicidailiHtmlParser();
 			List<HttpProxyBean> list = pa.parseList(html);
 			System.out.println(JSON.toJSONString(list));
 			return list;
 		}
 		return null;
+	}
+	/**
+	 * 西祠代理API获取  http://api.xicidaili.com/free2016.txt
+	 */
+	public static List<HttpProxyBean> searchXiciAPIHttpProxy() throws Exception{
+		String html = HttpClientUtil.execGet("http://api.xicidaili.com/free2016.txt");
+		List<HttpProxyBean> list = Lists.newArrayList();
+		if(html != null && !"Invalid Page".equals(html) && html.length()>0){
+			String[] arr = html.split("\n");
+			if(arr != null && arr.length > 0){
+				for(String ar : arr){
+					if(ar == null || ar.length() == 0)
+						continue;
+					ar =ar.replace("\r", "");
+					String[] pp = ar.split(":");
+					if(pp == null || pp.length < 2)
+						continue;
+					HttpProxyBean h = new HttpProxyBean();
+					h.setIp(pp[0]);
+					h.setPort(pp[1]);
+					list.add(h);
+				}
+			}
+		}
+//		System.out.println(html);
+//		System.out.println(html.split("\n").length);
+		return list;
 	}
 	
 	/**

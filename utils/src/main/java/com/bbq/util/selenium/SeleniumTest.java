@@ -9,17 +9,24 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpHost;
-import org.eclipse.jetty.util.log.Log;
+import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
+import com.bbq.util.constEnum.PCUserAgentEnum;
 import com.bbq.util.selenium.bean.HttpProxyBean;
+import com.bbq.util.selenium.thread.config.ConfigParam;
+import com.bbq.util.selenium.util.DelayUtil;
 import com.bbq.util.selenium.util.HttpClientProxy;
 import com.bbq.util.selenium.util.HttpProxySearcher;
 import com.google.common.collect.Lists;
@@ -27,16 +34,23 @@ import com.google.common.collect.Maps;
 
 
 public class SeleniumTest extends Thread{
+	private static final Logger log = Logger.getLogger(SeleniumTest.class);
 	private static Map<String,String> usedProxy = Maps.newHashMap();
 	public static void main(String[] args) {
+		long startTime = System.currentTimeMillis();
 		try {
 //			new HttpProxySearcherThread(orderNo).start();
-			new SeleniumTest().start();
+//			new SeleniumTest().start();
+			new SeleniumTest().testExecAutoQueryFireFox();
 //			 start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		long endTimme = System.currentTimeMillis();
+		System.out.println((endTimme-startTime));
 	}
+	static int toutiaoSuccessCount1 = 0;
+	static int toutiaoSuccessCount2 = 0;
 	public void run(){
 		int maxSuccessCount = 500;
 		int curSuccessCount = 0;
@@ -44,15 +58,19 @@ public class SeleniumTest extends Thread{
 		int totlePage = 5000;
 		loop:while(true){
 			List<HttpProxyBean> list = null;
-			try {
-				list = getProxyHost();
-			} catch (Exception e1) {
-				e1.printStackTrace();
+			while(list == null || list.size() == 0){
+				try {
+					Thread.sleep(1000);
+					list = getProxyHost();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
 			}
 			int a= 0;
 			for (HttpProxyBean proxyHost : list) {
 				try {
-					log("成功数/总数：" + curSuccessCount + "/" + ++curTotleCount +",本页代理[当前index/总zide]："+ ++a +"/"+list.size());
+					log("成功数/总数：" + curSuccessCount + "(头条：" + toutiaoSuccessCount1 + "-" + toutiaoSuccessCount2 + ")/" + ++curTotleCount
+							+ ",本页代理[当前index/总zide]：" + ++a + "/" + list.size());
 					boolean r = doOne(proxyHost);
 					if(r){
 						curSuccessCount++;
@@ -71,8 +89,13 @@ public class SeleniumTest extends Thread{
 	int netPage = 1;
 	private List<HttpProxyBean> getProxyHost() throws Exception{
 		List<HttpProxyBean> retList = Lists.newArrayList();
+		int minSecond = 0;
+		int maxSecond = 60;
 		while(retList == null || retList.size() == 0){
-			List<HttpProxyBean> list = HttpProxySearcher.searchXiciHttpProxy(1);
+			minSecond++;
+			int second = Math.min(minSecond, maxSecond);
+			Thread.sleep(second * 1000);
+			List<HttpProxyBean> list = getProxyHost(1);
 			boolean isNetNew = false;//网站上的代理是否刷新
 			for (HttpProxyBean httpProxyBean : list) {
 				String key = httpProxyBean.getIp()+":"+httpProxyBean.getPort();
@@ -82,7 +105,12 @@ public class SeleniumTest extends Thread{
 				}
 			}
 			if(!isNetNew){
-				list = HttpProxySearcher.searchXiciHttpProxy(++netPage);
+				log("代理没有刷新，从原来的页码（"+netPage+"）开始获取");
+				Thread.sleep(second * 1000);
+				list = getProxyHost(++netPage);
+			}else{
+				log("代理已刷新，从第一页开始获取");
+				netPage=1;
 			}
 			for (HttpProxyBean httpProxyBean : list) {
 				String key = httpProxyBean.getIp()+":"+httpProxyBean.getPort();
@@ -95,11 +123,13 @@ public class SeleniumTest extends Thread{
 				}
 			}
 		}
+		minSecond = 0;
 		return retList;
 	}
 	
-	private List<HttpProxyBean> getProxyHost(int page) throws Exception{
+	private List<HttpProxyBean> getProxyHost(int page){
 		List<HttpProxyBean> list = Lists.newArrayList();
+		try{
 //		// 实时从无忧收费代理去
 //		HttpProxyBean proxyHost = HttpProxySearcherThread.getProxy("a36067644c76e5bf53fe32806b479db1").get(0);
 //		while(proxyHost == null){
@@ -114,20 +144,14 @@ public class SeleniumTest extends Thread{
 //		list = HttpProxySearcher.searchWuyouHttpProxy();
 		
 		// 从快代理取
-//		list = HttpProxySearcher.searchKuaidailiHttpProxy(1);
+		list = HttpProxySearcher.searchKuaidailiHttpProxy(page++);
 		
 		// 从西祠代理取
-		list = HttpProxySearcher.searchXiciHttpProxy(page++);
-		for (HttpProxyBean httpProxyBean : list) {
-			String key = httpProxyBean.getIp()+":"+httpProxyBean.getPort();
-			if(usedProxy.containsKey(key)){
-				log("此代理["+key+"]已使用过，忽略");
-				continue;
-			}
-			usedProxy.put(key, null);
+//		list = HttpProxySearcher.searchXiciHttpProxy(page++);
+		}catch(Exception e){
+			e.printStackTrace();
 		}
-		
-		return list;
+		return list == null?Lists.newArrayList(new HttpProxyBean()):list;
 	}
 	
 	private boolean doOne(HttpProxyBean proxyHost) throws Exception {
@@ -202,6 +226,27 @@ public class SeleniumTest extends Thread{
 //			delay(1000, 2000);
 //			dr.findElement(By.linkText("【资源共享】电影都发在这里")).click();
 //			delay(1000, 2000);
+			String adUrl = "http://www.toutiao.com/i6420379203010560513/";
+			int maxH = 6000;
+//			String adUrl = "http://www.toutiao.com/i6420732837464375809/";
+//			int maxH = 4500;
+//			String adUrl = "http://baijiahao.baidu.com/builder/preview/s?id=1567561791269268";
+//			int maxH = 4500;
+			dr.get(adUrl);
+			delay(1000, 2000);
+			toutiaoSuccessCount1++;
+			if(dr instanceof JavascriptExecutor){
+				int curH = 0;
+				while(curH < maxH){
+					curH += 200+new Random().nextInt(400);
+					JavascriptExecutor driver_js= (JavascriptExecutor) dr;
+					String js = "window.scrollTo(0,"+curH+")";
+					log("执行js："+js);
+					driver_js.executeScript(js);
+					delay(1000, 2000);
+				}
+				toutiaoSuccessCount2++;
+			}
 			dr.get("http://www.biubiuq.cn/topic/803?t=c");
 //			log("寻找..");
 //			WebDriverWait wait = new WebDriverWait(dr,10);  
@@ -211,12 +256,12 @@ public class SeleniumTest extends Thread{
 //	            }}).click();  
 			dr.findElement(By.linkText("速度与激情8")).click();
 //			log("已经点击..");
-			delay(2000, 3000);
+			delay(500, 1500);
 			dr.findElement(By.id("free_down_link")).click();
-			delay(1000, 2000);
+			delay(500, 1500);
 			dr.findElement(By.id("free_down_link")).click();
 			log("下载完成");
-			delay(1000, 2000);
+			delay(500, 1500);
 			log("退出");
 		} finally {
 			if(dr != null){
@@ -261,16 +306,73 @@ public class SeleniumTest extends Thread{
 		}
 		
 	}
+	public void testExecAutoQueryFireFox() throws Exception{
+		System.setProperty ( "webdriver.gecko.driver" , ConfigParam.firefox_driver_file );
+		//firefox修改user-agent，chrome无
+		FirefoxProfile profile = new FirefoxProfile();
+//		profile.addAdditionalPreference("general.useragent.override", "some UA string");
+		profile.setPreference("general.useragent.override", "xxxxxdeliulanqi");
+		FirefoxOptions option = new FirefoxOptions();
+		option.addArguments("--user-agent=Apple Iphone 5");
+//		WebDriver driver = new FirefoxDriver(profile);
+//		WebDriver dr = new FirefoxDriver(option);
+		
+		System.setProperty("webdriver.chrome.driver", ConfigParam.chrome_driver_file);
+	    //声明chromeoptions,主要是给chrome设置参数
+	    ChromeOptions options = new ChromeOptions();
+	    //设置user agent为iphone5
+//	    options.addArguments("user-agent=clydeliulanqi");
+	    options.addArguments("user-agent="+PCUserAgentEnum.getRandomUserAgent());
+//	    options.addArguments("referer=http://www.cly.com");
+//	    options.addArguments("accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8,xxxxxcly");
+	    //实例化chrome对象，并加入选项
+	    WebDriver dr = new ChromeDriver(options);
+		try {
+			dr.get("https://baijiahao.baidu.com/po/feed/share?context=%7B%22nid%22%3A%22news_3271511677168637775%22%2C%22sourceFrom%22%3A%22bjh%22%7D&fr=bjhauthor&type=news");
+			delay(1000, 2000);
+			Actions action = new Actions(dr);
+//			action.moveToElement(dr.findElement(By.className("mth-wangmeng wangmeng-container relate-ad-show")));
+			action.moveToElement(dr.findElement(By.cssSelector("div[class='mth-wangmeng wangmeng-container relate-ad-show']")));
+			action.click();
+//			dr.findElement(By.linkText("【新鲜事】浙江一对母女老乡下了迷药，不满16周岁的女儿被祸害了")).click();
+//			if(dr instanceof JavascriptExecutor){
+//				JavascriptExecutor driver_js= (JavascriptExecutor) dr;
+//				String js = "window.scrollTo(0,"+curH+")";
+//				log.info("执行js："+js);
+//				driver_js.executeScript(js);
+//				DelayUtil.delay(1000, 2000);
+//			}
+//			dr.get("http://www.biubiuq.cn");
+//			delay(1000, 2000);
+//			dr.findElement(By.linkText("【资源共享】电影都发在这里")).click();
+//			delay(1000, 2000);
+//			dr.findElement(By.linkText("速度与激情8")).click();
+//			delay(2000, 3000);
+//			dr.findElement(By.id("free_down_link")).click();
+//			delay(1000, 2000);
+//			dr.findElement(By.id("free_down_link")).click();
+//			System.out.println("下载完成");
+			delay(3000, 2000);
+			System.out.println("退出");
+		} catch(Exception e){
+			e.printStackTrace();
+		} finally {
+			if(dr != null){
+				dr.quit();
+			}
+		}
+		
+	}
 	
-	private void delay(long t1,long randomT2) throws Exception{
-		Random r = new Random();
-		long sleepTime = 2000 + r.nextInt(2000);
+	private void delay(long t1,int randomT2) throws Exception{
+		long sleepTime = t1 + new Random().nextInt(randomT2);
 		System.out.println("睡眠ms："+sleepTime);
 		Thread.sleep(sleepTime);
 	}
 	SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private void log(String s){
 		System.out.println("SeleniumTest "+f.format(new Date())+" "+s);
+//		log.info(s);
 	}
 	
 }

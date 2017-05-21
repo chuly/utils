@@ -6,7 +6,7 @@ public class HttpProxyBean {
 
 	private String ip;
 	private String port;
-	private String httpType;// 协议类型 http https
+	private String httpType = "http";// 协议类型 http https
 	private String oriUrl;// 来源
 	private int type;// 10：国内高匿代理，20：国内普通代理，30：国外高匿代理，40：国外普通代理
 	private String addr;// 地址
