@@ -69,8 +69,8 @@ public class HttpProxySearcherThread extends Thread{
 					for(HttpProxyBean proxyHost : ipList){
 						HttpHost hh = new HttpHost(proxyHost.getIp(), Integer.parseInt(proxyHost.getPort()), "http");
 						try {
-							boolean checkResult = HttpClientProxy.checkProxy(hh);
-							if(checkResult == false){
+							String checkResult = HttpClientProxy.checkProxy(hh);
+							if(checkResult == null){
 								log("代理验证失败,继续下一轮");
 							}else{
 								log("代理验证成功,开始设置代理");

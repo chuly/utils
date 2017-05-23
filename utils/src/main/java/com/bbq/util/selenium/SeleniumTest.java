@@ -6,27 +6,28 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpHost;
-import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bbq.util.constEnum.PCUserAgentEnum;
 import com.bbq.util.selenium.bean.HttpProxyBean;
 import com.bbq.util.selenium.thread.config.ConfigParam;
-import com.bbq.util.selenium.util.DelayUtil;
 import com.bbq.util.selenium.util.HttpClientProxy;
 import com.bbq.util.selenium.util.HttpProxySearcher;
 import com.google.common.collect.Lists;
@@ -34,14 +35,15 @@ import com.google.common.collect.Maps;
 
 
 public class SeleniumTest extends Thread{
-	private static final Logger log = Logger.getLogger(SeleniumTest.class);
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	private static Map<String,String> usedProxy = Maps.newHashMap();
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
 		try {
 //			new HttpProxySearcherThread(orderNo).start();
 //			new SeleniumTest().start();
-			new SeleniumTest().testExecAutoQueryFireFox();
+//			new SeleniumTest().testExecAutoQueryFireFox();
+			new SeleniumTest().testTimeOut();
 //			 start();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -158,8 +160,8 @@ public class SeleniumTest extends Thread{
 		log("验证代理有效性：" + proxyHost.getIp() + ":" + proxyHost.getPort());
 		HttpHost hh = new HttpHost(proxyHost.getIp(), Integer.parseInt(proxyHost.getPort()), "http");
 		try {
-			boolean checkResult = HttpClientProxy.checkProxy(hh);
-			if(checkResult == false){
+			String checkResult = HttpClientProxy.checkProxy(hh);
+			if(checkResult == null){
 				log("代理验证失败,继续下一轮");
 				return false;
 			}else{
@@ -211,8 +213,8 @@ public class SeleniumTest extends Thread{
 		cap.setCapability(ChromeOptions.CAPABILITY, options);
 		WebDriver dr = new ChromeDriver(cap);
 //		dr.manage().window().maximize(); //将浏览器设置为最大化的状态
-		dr.manage().timeouts().pageLoadTimeout(15, TimeUnit.SECONDS);
-		dr.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+//		dr.manage().timeouts().pageLoadTimeout(15, TimeUnit.SECONDS);
+//		dr.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 		
 		//firefox修改user-agent，chrome无
 //		FirefoxProfile profile = new FirefoxProfile();
@@ -233,6 +235,7 @@ public class SeleniumTest extends Thread{
 //			String adUrl = "http://baijiahao.baidu.com/builder/preview/s?id=1567561791269268";
 //			int maxH = 4500;
 			dr.get(adUrl);
+			
 			delay(1000, 2000);
 			toutiaoSuccessCount1++;
 			if(dr instanceof JavascriptExecutor){
@@ -353,6 +356,35 @@ public class SeleniumTest extends Thread{
 //			dr.findElement(By.id("free_down_link")).click();
 //			System.out.println("下载完成");
 			delay(3000, 2000);
+			System.out.println("退出");
+		} catch(Exception e){
+			e.printStackTrace();
+		} finally {
+			if(dr != null){
+				dr.quit();
+			}
+		}
+		
+	}
+	
+	public void testTimeOut() throws Exception{
+		System.setProperty("webdriver.chrome.driver", ConfigParam.chrome_driver_file);
+	    ChromeOptions options = new ChromeOptions();
+	    options.addArguments("user-agent="+PCUserAgentEnum.getRandomUserAgent());
+	    WebDriver dr = new ChromeDriver(options);
+		try {
+			String adUrl = "https://page50.ctfile.com/fs/14115250-199528686";
+			log.info("----11111------开始加载页面------");
+			dr.get(adUrl);
+			log.info("----22222------页面加载完成------");
+			WebDriverWait _wait = new WebDriverWait(dr, 10);
+			_wait.until(new ExpectedCondition<WebElement>() {
+				public WebElement apply(WebDriver d) {
+					log.info("-----33333-----查找元素------");
+					return d.findElement(By.id("free_down_link"));
+				}
+			}).click();
+			delay(1000, 2000);
 			System.out.println("退出");
 		} catch(Exception e){
 			e.printStackTrace();

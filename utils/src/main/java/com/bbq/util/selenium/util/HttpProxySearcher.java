@@ -25,7 +25,7 @@ public class HttpProxySearcher {
 //		String orderNo = "a36067644c76e5bf53fe32806b479db1";
 //		List<HttpProxyBean> proxyHostList = HttpProxySearcher.searchWuyouHttpProxy(orderNo);
 //		System.out.println(JSON.toJSONString(proxyHostList));
-		List<HttpProxyBean> proxyHostList = searchXiciAPIHttpProxy();
+		List<HttpProxyBean> proxyHostList = searchShitouAPIHttpProxy();
 		System.out.println(JSON.toJSONString(proxyHostList));
 	}
 	/**
@@ -36,6 +36,7 @@ public class HttpProxySearcher {
 		if(html != null && !"Invalid Page".equals(html) && html.length()>0){
 			KuaidailiHtmlParser pa = new KuaidailiHtmlParser();
 			List<HttpProxyBean> list = pa.parseList(html);
+			setProxyOriUrl(list, "www.kuaidaili.com");
 			System.out.println(JSON.toJSONString(list));
 			return list;
 		}
@@ -50,6 +51,7 @@ public class HttpProxySearcher {
 		if(html != null && !"Invalid Page".equals(html) && html.length()>0){
 			XicidailiHtmlParser pa = new XicidailiHtmlParser();
 			List<HttpProxyBean> list = pa.parseList(html);
+			setProxyOriUrl(list, "www.xicidaili.com");
 			System.out.println(JSON.toJSONString(list));
 			return list;
 		}
@@ -80,6 +82,34 @@ public class HttpProxySearcher {
 		}
 //		System.out.println(html);
 //		System.out.println(html.split("\n").length);
+		setProxyOriUrl(list, "http://api.xicidaili.com/free2016.txt");
+		return list;
+	}
+		
+	/**
+	 * http://www.shitou0707.com:3399/tools/proxyIP.ashx?action=GeProxyIP
+	 */
+	public static List<HttpProxyBean> searchShitouAPIHttpProxy() throws Exception{
+		String html = HttpClientUtil.execGet("http://www.shitou0707.com:3399/tools/proxyIP.ashx?action=GeProxyIP");
+		List<HttpProxyBean> list = Lists.newArrayList();
+		if(html != null && !"Invalid Page".equals(html) && html.length()>0){
+			String[] arr = html.split("\n");
+			if(arr != null && arr.length > 0){
+				for(String ar : arr){
+					if(ar == null || ar.length() == 0)
+						continue;
+					ar =ar.replace("\r", "");
+					String[] pp = ar.split(":");
+					if(pp == null || pp.length < 2)
+						continue;
+					HttpProxyBean h = new HttpProxyBean();
+					h.setIp(pp[0]);
+					h.setPort(pp[1]);
+					list.add(h);
+				}
+			}
+		}
+		setProxyOriUrl(list, "http://www.shitou0707.com:3399/tools/proxyIP.ashx?action=GeProxyIP");
 		return list;
 	}
 	
@@ -91,13 +121,18 @@ public class HttpProxySearcher {
 		if(html != null && html.length()>0){
 			DailiHtmlParserItf pa = new WuyoudailiHtmlParser();
 			List<HttpProxyBean> list = pa.parseList(html);
+			setProxyOriUrl(list, "www.data5u.com");
 			System.out.println(JSON.toJSONString(list));
 			return list;
 		}
 		return null;
 	}
-	public static List<HttpProxyBean> searchWuyouHttpProxy(String orderNo) throws Exception{
-		java.net.URL url = new java.net.URL("http://api.ip.data5u.com/dynamic/get.html?order=" + orderNo + "&ttl");
+	public static List<HttpProxyBean> searchWuyouHttpProxy(String orderNo,boolean random) throws Exception{
+		String randomParam = "";
+		if(random){
+			randomParam = "&random";
+		}
+		java.net.URL url = new java.net.URL("http://api.ip.data5u.com/dynamic/get.html?order=" + orderNo + "&ttl"+randomParam);
     	HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     	connection.setConnectTimeout(3000);
     	connection = (HttpURLConnection)url.openConnection();
@@ -135,7 +170,16 @@ public class HttpProxySearcher {
 			} catch (Exception e) {
 			}
 		}
+		setProxyOriUrl(ipList, "http://api.ip.data5u.com/dynamic/get.html");
 		return ipList;
+	}
+	
+	private static void setProxyOriUrl(List<HttpProxyBean> list, String oriUrl){
+		if(list != null && list.size() > 0){
+			for (HttpProxyBean httpProxyBean : list) {
+				httpProxyBean.setOriUrl(oriUrl);
+			}
+		}
 	}
 	
 	private static String searchHttpProxy(String host,String url) throws Exception{

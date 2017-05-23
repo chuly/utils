@@ -31,23 +31,38 @@ public class ProxySearchThread extends Thread {
 		log.info("代理查找线程启动。");
 		while(true){
 			try{
-				log.info("当前检查线程数:"+ConfigParam.running_check_thread.size()+"/"+ConfigParam.max_check_thread_num);
-				while((ConfigParam.running_check_thread.size() >= ConfigParam.max_check_thread_num)
-						|| (ConfigParam.running_work_thread.size() >= ConfigParam.max_work_thread_num)){
-					log.info("当前检查线程数（"+ConfigParam.running_check_thread.size()+"）已达最大允许线程数（"+ConfigParam.max_check_thread_num+"）"
-							+"或者 当前工作线程数（"+ConfigParam.running_work_thread.size()+"）已达最大允许线程数（"+ConfigParam.max_work_thread_num+"）");
-					Thread.sleep(5 * 1000);
+				log.info("当前检查任务数:" + ConfigParam.check_task_queue.size() + "/" + ConfigParam.max_check_task_num);
+				while ((ConfigParam.check_task_queue.size() >= ConfigParam.max_check_task_num)
+						|| ConfigParam.work_task_queue.size() >= ConfigParam.max_work_task_num) {
+					log.info("检查任务数（" + ConfigParam.check_task_queue.size() + "）已达最大允许任务数（" + ConfigParam.max_check_task_num + "），"
+							+ "或者工作任务数（"+ConfigParam.work_task_queue.size()+"）已达最大数（"+ConfigParam.max_work_task_num+"），等待60秒...");
+					Thread.sleep(60 * 1000);
 				}
 				if(netType >= 100){
 					if(netType == 100){
 						List<HttpProxyBean> list = HttpProxySearcher.searchXiciAPIHttpProxy();
 						List<HttpProxyBean> newProxyList = removeUsedProxy(list);
-						startCheckThread(newProxyList);
+						submitCheckTask(newProxyList);
 						Thread.sleep(15 * 60 * 1000);//15分钟
+					}else if(netType == 101){
+						List<HttpProxyBean> list = HttpProxySearcher.searchShitouAPIHttpProxy();
+						List<HttpProxyBean> newProxyList = removeUsedProxy(list);
+						submitCheckTask(newProxyList);
+						Thread.sleep(15 * 1000);//15秒钟
+					}else if(netType == 102){
+						List<HttpProxyBean> list = HttpProxySearcher.searchWuyouHttpProxy(ConfigParam.wuyou_order_no,false);
+						List<HttpProxyBean> newProxyList = removeUsedProxy(list);
+						submitCheckTask(newProxyList);
+						Thread.sleep(1000);//1秒钟
+					}else if(netType == 103){
+						List<HttpProxyBean> list = HttpProxySearcher.searchWuyouHttpProxy(ConfigParam.wuyou_order_no,true);
+						List<HttpProxyBean> newProxyList = removeUsedProxy(list);
+						submitCheckTask(newProxyList);
+						Thread.sleep(1000);//1秒钟
 					}
 				}else{
 					List<HttpProxyBean> list = getProxyHost();
-					startCheckThread(list);
+					submitCheckTask(list);
 				}
 				
 			}catch(Exception e){
@@ -56,20 +71,24 @@ public class ProxySearchThread extends Thread {
 			}
 		}
 	}
-	private void startCheckThread(List<HttpProxyBean> list ){
+	private void submitCheckTask(List<HttpProxyBean> list ){
 		if(list == null || list.size() == 0){
+			log.info("代理数为空，list="+list);
 			return;
 		}
-		int n = 10;//给每个检查线程分配的任务数
-		int maxI = list.size() / n;
-		for (int i = 0; i < maxI; i++) {
-			if (i == maxI - 1) {
-				List<HttpProxyBean> listTmp = list.subList(n * i, n * (i + 1));
-				new ProxyCheckThread(listTmp).start();
-			} else {
-				List<HttpProxyBean> listTmp = list.subList(n * i, list.size());
-				new ProxyCheckThread(listTmp).start();
-			}
+//		int n = 20;//给每个检查线程分配的任务数
+//		int maxI = list.size() / n;
+//		for (int i = 0; i < maxI; i++) {
+//			if (i == maxI - 1) {
+//				List<HttpProxyBean> listTmp = list.subList(n * i, n * (i + 1));
+//				new ProxyCheckThread(listTmp).start();
+//			} else {
+//				List<HttpProxyBean> listTmp = list.subList(n * i, list.size());
+//				new ProxyCheckThread(listTmp).start();
+//			}
+//		}
+		for (HttpProxyBean httpProxyBean : list) {
+			ConfigParam.check_thread_pool.submit(new ProxyCheckThread(httpProxyBean));
 		}
 	}
 	

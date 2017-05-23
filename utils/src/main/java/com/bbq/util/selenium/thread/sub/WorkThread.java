@@ -9,15 +9,19 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bbq.util.constEnum.PCUserAgentEnum;
 import com.bbq.util.selenium.bean.HttpProxyBean;
+import com.bbq.util.selenium.persistence.JdbcUtil;
 import com.bbq.util.selenium.thread.config.ConfigParam;
 import com.bbq.util.selenium.util.DelayUtil;
 
@@ -33,13 +37,13 @@ public class WorkThread extends Thread {
 	public void run() {
 		setName("WorkThread-"+getName());
 		log.info("工作线程启动。");
-		ConfigParam.running_work_thread.put(this, f.format(new Date()));
+//		ConfigParam.running_work_thread.put(this, f.format(new Date()));
 		try{
 			execAutoQuery();
 		}catch(Exception e){
 			log.error("",e);
 		}finally{
-			ConfigParam.running_work_thread.remove(this);
+//			ConfigParam.running_work_thread.remove(this);
 		}
 	}
 
@@ -65,7 +69,8 @@ public class WorkThread extends Thread {
 		dr.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 		try {
 //			runToutiao(dr);
-			runChengtong(dr);
+//			runChengtong(dr);
+			runBaijia(dr);
 		} finally {
 			if(dr != null){
 				dr.quit();
@@ -122,26 +127,34 @@ public class WorkThread extends Thread {
 			}
 			ConfigParam.success_complete_count.incrementAndGet();
 		}
-		dr.get("http://www.biubiuq.cn/topic/803?th="+Thread.currentThread().getName());
-		dr.findElement(By.linkText("速度与激情8")).click();
-		DelayUtil.delay(500, 1500);
-		dr.findElement(By.id("free_down_link")).click();
-		DelayUtil.delay(500, 1500);
-		dr.findElement(By.id("free_down_link")).click();
-		log.info("下载完成");
 		DelayUtil.delay(500, 1500);
 		log.info("退出");
 	}
 	// 诚通网盘
 	private void runChengtong(WebDriver dr) {
+//		String adUrl = "https://page50.ctfile.com/fs/14115250-199528686";
+//		log.info("----11111------开始加载页面------");
+//		dr.get(adUrl);
+//		log.info("----22222------页面加载完成------");
+//		WebDriverWait _wait = new WebDriverWait(dr, 10);
+//		_wait.until(new ExpectedCondition<WebElement>() {
+//			public WebElement apply(WebDriver d) {
+//				log.info("-----33333-----查找元素------");
+//				return d.findElement(By.id("free_down_link"));
+//			}
+//		}).click();
+//		DelayUtil.delay(1000, 2000);
+		
 		dr.get("https://page50.ctfile.com/fs/14115250-199528686");
 		ConfigParam.success_start_count.incrementAndGet();
-		DelayUtil.delay(2000, 3000);
+		JdbcUtil.insert(proxyHost, 20);
+		DelayUtil.delay(1500, 2000);
 		dr.findElement(By.id("free_down_link")).click();
-		DelayUtil.delay(1000, 2000);
+		DelayUtil.delay(500, 2000);
 		dr.findElement(By.id("free_down_link")).click();
-		DelayUtil.delay(1000, 2000);
+		DelayUtil.delay(500, 1000);
 		ConfigParam.success_complete_count.incrementAndGet();
+		JdbcUtil.insert(proxyHost, 30);
 	}
 	
 }

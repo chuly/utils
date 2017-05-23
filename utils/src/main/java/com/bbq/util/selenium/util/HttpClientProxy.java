@@ -26,7 +26,7 @@ public class HttpClientProxy {
 		System.out.println(resp);
 	}
 
-	public static boolean checkProxy(HttpHost proxyHost) throws Exception {
+	public static String checkProxy(HttpHost proxyHost) throws Exception {
 //		String url ="http://s.ip-cdn.com/css/bootstrap.min.css";
 //		String url ="http://1212.ip138.com/ic.asp";
 		String url ="1212.ip138.com";
@@ -54,14 +54,15 @@ public class HttpClientProxy {
 //			System.out.println(result);
 			if(result.indexOf(checkStr)>=0){
 				String ss = result.substring(result.indexOf("<center>")+8,result.indexOf("</center>"));
+				ss = ss.substring(ss.indexOf("来自：")+3);
 				System.out.println(ss);
-				return true;
+				return ss;
 			}
-			return false;
+			return null;
 		} else {
 			System.out.println("错误的状态 ： status=" + status);
 		}
-		return false;
+		return null;
 	}
 	
 	private static Map<String, String> createHeader(String host){
