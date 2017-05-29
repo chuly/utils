@@ -17,8 +17,8 @@ public class SeleniumByThread extends Thread{
 		new ProxySearchThread(3).start();
 		new ProxySearchThread(100).start();
 		new ProxySearchThread(101).start();
-		new ProxySearchThread(102).start();//无忧代理付费接口，剩余时间长的优先获取
-		new ProxySearchThread(103).start();//无忧代理付费接口，随机
+//		new ProxySearchThread(102).start();//无忧代理付费接口，剩余时间长的优先获取
+//		new ProxySearchThread(103).start();//无忧代理付费接口，随机
 		while(true){
 			try {
 				Thread.sleep(60 * 1000);

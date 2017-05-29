@@ -83,6 +83,7 @@ public class WorkThread extends Thread {
 		String adUrl = "http://www.toutiao.com/i6420379203010560513/";
 		int maxH = 6000;
 		dr.get(adUrl);
+		JdbcUtil.insert(proxyHost, 20);
 		DelayUtil.delay(1000, 2000);
 		ConfigParam.success_start_count.incrementAndGet();
 		if(dr instanceof JavascriptExecutor){
@@ -96,6 +97,7 @@ public class WorkThread extends Thread {
 				DelayUtil.delay(1000, 2000);
 			}
 			ConfigParam.success_complete_count.incrementAndGet();
+			JdbcUtil.insert(proxyHost, 30);
 		}
 		dr.get("http://www.biubiuq.cn/topic/803?th="+Thread.currentThread().getName());
 		dr.findElement(By.linkText("速度与激情8")).click();
@@ -109,8 +111,8 @@ public class WorkThread extends Thread {
 	}
 	// 百家号
 	private void runBaijia(WebDriver dr) {
-		String adUrl = "https://baijiahao.baidu.com/po/feed/share?"
-				+ "context=%7B%22nid%22%3A%22news_3271511677168637775%22%2C%22sourceFrom%22%3A%22bjh%22%7D&fr=bjhauthor&type=news";
+		String adUrl = "https://baijiahao.baidu.com/po/feed/share?context=%7B%22nid%22%3A%22news_3271511677168637775%22%2C%22sourceFrom%22%3A%22bjh%22%7D&fr=bjhauthor&type=news";
+		JdbcUtil.insert(proxyHost, 20);
 		int maxH = 6000;
 		dr.get(adUrl);
 		DelayUtil.delay(1000, 2000);
@@ -126,6 +128,7 @@ public class WorkThread extends Thread {
 				DelayUtil.delay(1000, 2000);
 			}
 			ConfigParam.success_complete_count.incrementAndGet();
+			JdbcUtil.insert(proxyHost, 30);
 		}
 		DelayUtil.delay(500, 1500);
 		log.info("退出");
