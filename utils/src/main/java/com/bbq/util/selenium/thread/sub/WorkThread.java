@@ -119,16 +119,20 @@ public class WorkThread extends Thread {
 		ConfigParam.success_start_count.incrementAndGet();
 		if(dr instanceof JavascriptExecutor){
 			int curH = 0;
+			int scrollCount = 0;
 			while(curH < maxH){
 				curH += 200+new Random().nextInt(400);
 				JavascriptExecutor driver_js= (JavascriptExecutor) dr;
 				String js = "window.scrollTo(0,"+curH+")";
 				log.info("执行js："+js);
 				driver_js.executeScript(js);
+				scrollCount++;
 				DelayUtil.delay(1000, 2000);
 			}
-			ConfigParam.success_complete_count.incrementAndGet();
-			JdbcUtil.insert(proxyHost, 30);
+			if(scrollCount >= 2){
+				ConfigParam.success_complete_count.incrementAndGet();
+				JdbcUtil.insert(proxyHost, 30);
+			}
 		}
 		DelayUtil.delay(500, 1500);
 		log.info("退出");
