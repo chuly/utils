@@ -3,6 +3,7 @@ package com.bbq.util.selenium.thread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bbq.util.selenium.persistence.JdbcUtil;
 import com.bbq.util.selenium.thread.config.ConfigParam;
 import com.bbq.util.selenium.thread.sub.ProxySearchThread;
 
@@ -11,7 +12,14 @@ public class SeleniumByThread extends Thread{
 	private static final Logger log = LoggerFactory.getLogger(SeleniumByThread.class);
 	
 	public static void main(String[] args) {
-		log.info("主线程启动");
+		log.info("主线程启动...");
+		log.info("从DB中加载24小时内已用过的代理...");
+		try {
+			JdbcUtil.loadUserProxyFromDB();
+		} catch (Exception e) {
+			log.error("从DB中加载已用代理出错",e);
+		}
+		log.info("开始启动代理嗅探查找线程...");
 		new ProxySearchThread(1).start();
 		new ProxySearchThread(2).start();
 		new ProxySearchThread(3).start();

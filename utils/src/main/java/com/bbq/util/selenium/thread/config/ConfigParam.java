@@ -34,6 +34,7 @@ public class ConfigParam {
 	
 	public static final String mysql_url="jdbc:mysql://localhost:3306/test?autoReconnect=true&useSSL=false&characterEncoding=UTF-8&user=root&password=root";
 	public static final boolean save_to_db = true;
+	public static final boolean load_used_proxy_from_db = true;
 	
 	public static final String wuyou_order_no = "a36067644c76e5bf53fe32806b479db1";
 }
