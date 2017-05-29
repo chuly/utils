@@ -43,7 +43,8 @@ public class SeleniumTest extends Thread{
 //			new HttpProxySearcherThread(orderNo).start();
 //			new SeleniumTest().start();
 //			new SeleniumTest().testExecAutoQueryFireFox();
-			new SeleniumTest().testTimeOut();
+//			new SeleniumTest().testTimeOut();
+			new SeleniumTest().testBaijia();
 //			 start();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -376,6 +377,38 @@ public class SeleniumTest extends Thread{
 			String adUrl = "https://page50.ctfile.com/fs/14115250-199528686";
 			log.info("----11111------开始加载页面------");
 			dr.get(adUrl);
+			log.info("----22222------页面加载完成------");
+			WebDriverWait _wait = new WebDriverWait(dr, 10);
+			_wait.until(new ExpectedCondition<WebElement>() {
+				public WebElement apply(WebDriver d) {
+					log.info("-----33333-----查找元素------");
+					return d.findElement(By.id("free_down_link"));
+				}
+			}).click();
+			delay(1000, 2000);
+			System.out.println("退出");
+		} catch(Exception e){
+			e.printStackTrace();
+		} finally {
+			if(dr != null){
+				dr.quit();
+			}
+		}
+		
+	}
+	public void testBaijia() throws Exception{
+		System.setProperty("webdriver.chrome.driver", ConfigParam.chrome_driver_file);
+	    ChromeOptions options = new ChromeOptions();
+	    options.addArguments("user-agent="+PCUserAgentEnum.getRandomUserAgent());
+	    WebDriver dr = new ChromeDriver(options);
+		try {
+			String adUrl = "https://baijiahao.baidu.com/po/feed/share?context=%7B%22nid%22%3A%22news_3325669316575088857%22%2C%22sourceFrom%22%3A%22bjh%22%7D&fr=followcon&wfr=null&type=news";
+			log.info("----11111------开始加载页面------");
+			dr.get(adUrl);
+			WebElement we = dr.findElement(By.linkText("默默然1"));
+			System.out.println(we);
+			we.getTagName();
+			we.getAttribute("href");
 			log.info("----22222------页面加载完成------");
 			WebDriverWait _wait = new WebDriverWait(dr, 10);
 			_wait.until(new ExpectedCondition<WebElement>() {
