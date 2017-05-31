@@ -28,7 +28,7 @@ public class JdbcUtil {
 			Class.forName("com.mysql.jdbc.Driver");
 			con = DriverManager.getConnection(ConfigParam.mysql_url);
 			String insertSQL = "INSERT INTO t_http_proxy (ip, port,ori_url,addr,can_use) "
-					+ "VALUES(?,?,?,?,?)";
+					+ "VALUES(?,?,?,?,1)";
 			insertPstmt = con.prepareStatement(insertSQL);
 			String updateSQL = "update t_http_proxy set ";
 		} catch (Exception e) {
