@@ -76,7 +76,7 @@ public class JdbcUtil {
 		SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date curDate = new Date();
 		curDate.setTime(curDate.getTime() - 6*3600*1000);
-		String whereSql = " (create_date>='"+f.format(curDate)+"' or create_date>='"+ymdStr+"') ";
+		String whereSql = " (create_date>='"+f.format(curDate)+"' and create_date>='"+ymdStr+"') ";
 		ResultSet rs = st.executeQuery("select count(1) from t_http_proxy where check_result=10 and "+whereSql);
 		int totleCount = 0;
 		int n = 0;
