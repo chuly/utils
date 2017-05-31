@@ -78,12 +78,23 @@ public class WorkThread extends Thread {
 		}
 		
 	}
+	private void updateDB(String startOrEnd){
+		if(proxyHost.getExtParam() != null){
+			Long id = Long.parseLong(proxyHost.getExtParam());
+			try {
+				JdbcUtil.update(id, startOrEnd);
+			} catch (Exception e) {
+				log.error("更新DB出错",e);
+			}
+		}
+		
+	}
 	// 头条
 	private void runToutiao(WebDriver dr) {
 		String adUrl = "http://www.toutiao.com/i6420379203010560513/";
 		int maxH = 6000;
 		dr.get(adUrl);
-		JdbcUtil.insert(proxyHost, 20);
+		updateDB("start");
 		DelayUtil.delay(1000, 2000);
 		ConfigParam.success_start_count.incrementAndGet();
 		if(dr instanceof JavascriptExecutor){
@@ -97,7 +108,7 @@ public class WorkThread extends Thread {
 				DelayUtil.delay(1000, 2000);
 			}
 			ConfigParam.success_complete_count.incrementAndGet();
-			JdbcUtil.insert(proxyHost, 30);
+			updateDB("end");
 		}
 		dr.get("http://www.biubiuq.cn/topic/803?th="+Thread.currentThread().getName());
 		dr.findElement(By.linkText("速度与激情8")).click();
@@ -113,7 +124,7 @@ public class WorkThread extends Thread {
 	private void runBaijia(WebDriver dr) {
 //		String adUrl = "https://baijiahao.baidu.com/po/feed/share?context=%7B%22nid%22%3A%22news_3271511677168637775%22%2C%22sourceFrom%22%3A%22bjh%22%7D&fr=bjhauthor&type=news";
 		String adUrl = "https://baijiahao.baidu.com/po/feed/share?wfr=spider&for=pc&context=%7B%22sourceFrom%22%3A%22bjh%22%2C%22nid%22%3A%22news_3839190351258178576%22%7D";
-		JdbcUtil.insert(proxyHost, 20);
+		updateDB("start");
 		int maxH = 2000;
 		dr.get(adUrl);
 		DelayUtil.delay(1000, 2000);
@@ -142,7 +153,7 @@ public class WorkThread extends Thread {
 				}
 				if(scrollCount >= 1){
 					ConfigParam.success_complete_count.incrementAndGet();
-					JdbcUtil.insert(proxyHost, 30);
+					updateDB("end");
 				}
 			}
 			DelayUtil.delay(500, 1500);
@@ -166,14 +177,14 @@ public class WorkThread extends Thread {
 		
 		dr.get("https://page50.ctfile.com/fs/14115250-199528686");
 		ConfigParam.success_start_count.incrementAndGet();
-		JdbcUtil.insert(proxyHost, 20);
+		updateDB("start");
 		DelayUtil.delay(1500, 2000);
 		dr.findElement(By.id("free_down_link")).click();
 		DelayUtil.delay(500, 2000);
 		dr.findElement(By.id("free_down_link")).click();
 		DelayUtil.delay(500, 1000);
 		ConfigParam.success_complete_count.incrementAndGet();
-		JdbcUtil.insert(proxyHost, 30);
+		updateDB("end");
 	}
 	
 }

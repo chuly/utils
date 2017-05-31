@@ -11,6 +11,15 @@ public class HttpProxyBean {
 	private int type;// 10：国内高匿代理，20：国内普通代理，30：国外高匿代理，40：国外普通代理
 	private String addr;// 地址
 	private Date createDate;// 创建日期
+	private String extParam;//额外参数
+	
+	public String getExtParam() {
+		return extParam;
+	}
+
+	public void setExtParam(String extParam) {
+		this.extParam = extParam;
+	}
 
 	public String getIp() {
 		return ip;

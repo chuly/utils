@@ -52,7 +52,10 @@ public class ProxyCheckThread extends Thread {
 				log.info("代理验证结果：可用，开始启动工作线程...");
 				httpProxyBean.setAddr(checkResult);
 				ConfigParam.work_thread_pool.submit(new WorkThread(httpProxyBean));
-				JdbcUtil.insert(httpProxyBean, 10);
+				Long id = JdbcUtil.insert(httpProxyBean);
+				if(id != null){
+					httpProxyBean.setExtParam(String.valueOf(id));
+				}
 			}
 		} catch (Exception e) {
 			log.info("代理验证失败:"+e.getMessage());

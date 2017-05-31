@@ -18,41 +18,48 @@ public class JdbcUtil {
 	private static final Logger log = LoggerFactory.getLogger(JdbcUtil.class);
 
 	private static Connection con;
-	private static PreparedStatement pstmt;
+	private static PreparedStatement insertPstmt;
 	
 	private static boolean needInit() {
-		return con == null || pstmt == null;
+		return con == null || insertPstmt == null;
 	}
 	public static void init(){
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			con = DriverManager.getConnection(ConfigParam.mysql_url);
-			String insertTopicSQL = "INSERT INTO t_http_proxy (ip, port,ori_url,addr,check_result) "
+			String insertSQL = "INSERT INTO t_http_proxy (ip, port,ori_url,addr,can_use) "
 					+ "VALUES(?,?,?,?,?)";
-			pstmt = con.prepareStatement(insertTopicSQL);
+			insertPstmt = con.prepareStatement(insertSQL);
+			String updateSQL = "update t_http_proxy set ";
 		} catch (Exception e) {
 			log.error("数据库连接失败", e);
 		}
 	}
-	public static void insert(HttpProxyBean httpProxyBean,int checkResult){
+	public static Long insert(HttpProxyBean httpProxyBean){
 		if(ConfigParam.save_to_db)
-			insert(httpProxyBean.getIp(), httpProxyBean.getPort(), httpProxyBean.getOriUrl(), httpProxyBean.getAddr(), checkResult);
+			return insert(httpProxyBean.getIp(), httpProxyBean.getPort(), httpProxyBean.getOriUrl(), httpProxyBean.getAddr());
+		return null;
 	}
-	private static void insert(String ip,String port,String oriUrl,String addr,int checkResult){
+	private static Long insert(String ip,String port,String oriUrl,String addr){
 		if(needInit()){
 			init();
 		}
+		Long id = null;
 		try {
-			pstmt.setString(1, ip);
-			pstmt.setString(2, port);
-			pstmt.setString(3, oriUrl);
-			pstmt.setString(4, addr);
-			pstmt.setInt(5, checkResult);
-			int c = pstmt.executeUpdate();
+			insertPstmt.setString(1, ip);
+			insertPstmt.setString(2, port);
+			insertPstmt.setString(3, oriUrl);
+			insertPstmt.setString(4, addr);
+			int c = insertPstmt.executeUpdate();
+			ResultSet rs = insertPstmt.getGeneratedKeys(); 
+			if (rs.next()) {
+				id = rs.getLong(1); 
+			} 
 			log.info("插入DB条数："+c);
 		} catch (Exception e) {
-			log.warn("插入数据库失败，ip={},port={},oriUrl={},addr={},checkResult={}",ip,port,oriUrl,addr,checkResult);
+			log.warn("插入数据库失败，ip={},port={},oriUrl={},addr={},canUse={}",ip,port,oriUrl,addr);
 		}
+		return id;
 	}
 	
 	public static void loadUserProxyFromDB() throws Exception{
@@ -93,5 +100,15 @@ public class JdbcUtil {
 			log.info("已用代理数据量超过"+limitCount+"("+totleCount+")，不加载");
 		}
 	}
-	
+	public static void update(Long id,String startOrEnd) throws Exception{
+		if(needInit()){
+			init();
+		}
+		Statement st = con.createStatement();
+		if("start".equals(startOrEnd)){
+			st.executeUpdate("update t_http_proxy set start_page=1 where id="+id);
+		}else if("end".equals(startOrEnd)){
+			st.executeUpdate("update t_http_proxy set end_page=1 where id="+id);
+		}
+	}
 }
