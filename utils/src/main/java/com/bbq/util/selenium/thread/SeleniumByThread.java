@@ -15,7 +15,7 @@ public class SeleniumByThread extends Thread{
 		log.info("主线程启动...");
 		log.info("从DB中加载24小时内已用过的代理...");
 		try {
-//			JdbcUtil.loadUserProxyFromDB();
+			JdbcUtil.loadUserProxyFromDB();
 		} catch (Exception e) {
 			log.error("从DB中加载已用代理出错",e);
 		}

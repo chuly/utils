@@ -77,7 +77,7 @@ public class JdbcUtil {
 		Date curDate = new Date();
 		curDate.setTime(curDate.getTime() - 6*3600*1000);
 		String whereSql = " (create_date>='"+f.format(curDate)+"' and create_date>='"+ymdStr+"') ";
-		ResultSet rs = st.executeQuery("select count(1) from t_http_proxy where check_result=10 and "+whereSql);
+		ResultSet rs = st.executeQuery("select count(1) from t_http_proxy where can_use=1 and "+whereSql);
 		int totleCount = 0;
 		int n = 0;
 		int curCount = 0;
@@ -88,7 +88,7 @@ public class JdbcUtil {
 		}
 		if(totleCount <= limitCount){
 			while (curCount<totleCount){
-				String querySql = "select * from t_http_proxy where check_result=10 and "+whereSql+" limit "+curCount+","+pageSize;
+				String querySql = "select * from t_http_proxy where can_use=1 and "+whereSql+" limit "+curCount+","+pageSize;
 				log.info("querySql="+querySql);
 				rs = st.executeQuery(querySql);
 				while(rs.next()){
