@@ -70,10 +70,13 @@ public class JdbcUtil {
 			init();
 		}
 		Statement st = con.createStatement();
+		SimpleDateFormat yyyyMMddFormat = new SimpleDateFormat("yyyy-MM-dd");
+		String ymdStr = yyyyMMddFormat.format(new Date())+" 00:00:00";
+		
 		SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date curDate = new Date();
-		curDate.setTime(curDate.getTime() - 24*3600*1000);
-		String whereSql = " create_date>='"+f.format(curDate)+"'";
+		curDate.setTime(curDate.getTime() - 6*3600*1000);
+		String whereSql = " (create_date>='"+f.format(curDate)+"' or create_date>='"+ymdStr+"') ";
 		ResultSet rs = st.executeQuery("select count(1) from t_http_proxy where check_result=10 and "+whereSql);
 		int totleCount = 0;
 		int n = 0;
