@@ -27,7 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import com.bbq.util.constEnum.PCUserAgentEnum;
 import com.bbq.util.selenium.bean.HttpProxyBean;
+import com.bbq.util.selenium.persistence.JdbcUtil;
 import com.bbq.util.selenium.thread.config.ConfigParam;
+import com.bbq.util.selenium.util.DelayUtil;
 import com.bbq.util.selenium.util.HttpClientProxy;
 import com.bbq.util.selenium.util.HttpProxySearcher;
 import com.google.common.collect.Lists;
@@ -402,21 +404,22 @@ public class SeleniumTest extends Thread{
 	    options.addArguments("user-agent="+PCUserAgentEnum.getRandomUserAgent());
 	    WebDriver dr = new ChromeDriver(options);
 		try {
-			String adUrl = "https://baijiahao.baidu.com/po/feed/share?context=%7B%22nid%22%3A%22news_3325669316575088857%22%2C%22sourceFrom%22%3A%22bjh%22%7D&fr=followcon&wfr=null&type=news";
+			String adUrl = "https://baijiahao.baidu.com/po/feed/share?wfr=spider&for=pc&context=%7B%22sourceFrom%22%3A%22bjh%22%2C%22nid%22%3A%22news_3839190351258178576%22%7D";
 			log.info("----11111------开始加载页面------");
 			dr.get(adUrl);
-			WebElement we = dr.findElement(By.linkText("默默然1"));
+			WebElement we = dr.findElement(By.linkText("默默然"));
 			System.out.println(we);
 			we.getTagName();
 			we.getAttribute("href");
 			log.info("----22222------页面加载完成------");
-			WebDriverWait _wait = new WebDriverWait(dr, 10);
-			_wait.until(new ExpectedCondition<WebElement>() {
-				public WebElement apply(WebDriver d) {
-					log.info("-----33333-----查找元素------");
-					return d.findElement(By.id("free_down_link"));
-				}
-			}).click();
+			if(dr instanceof JavascriptExecutor){
+				JavascriptExecutor driver_js= (JavascriptExecutor) dr;
+				String js = "return document.body.scrollHeight";
+				log.info("执行js："+js);
+				Object o = driver_js.executeScript(js);
+				System.out.println(o);
+				DelayUtil.delay(1000, 2000);
+			}
 			delay(1000, 2000);
 			System.out.println("退出");
 		} catch(Exception e){

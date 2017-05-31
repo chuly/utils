@@ -113,25 +113,33 @@ public class WorkThread extends Thread {
 	private void runBaijia(WebDriver dr) {
 		String adUrl = "https://baijiahao.baidu.com/po/feed/share?context=%7B%22nid%22%3A%22news_3271511677168637775%22%2C%22sourceFrom%22%3A%22bjh%22%7D&fr=bjhauthor&type=news";
 		JdbcUtil.insert(proxyHost, 20);
-		int maxH = 6000;
+		int maxH = 2000;
 		dr.get(adUrl);
 		DelayUtil.delay(1000, 2000);
 		WebElement we = dr.findElement(By.linkText("默默然"));
 		if(we != null){
 			ConfigParam.success_start_count.incrementAndGet();
 			if(dr instanceof JavascriptExecutor){
+				JavascriptExecutor driver_js= (JavascriptExecutor) dr;
 				int curH = 0;
 				int scrollCount = 0;
+				try {
+					int scrollHeight = Integer.parseInt(driver_js.executeScript("return document.body.scrollHeight").toString());//4305
+					int screenHeight = Integer.parseInt(driver_js.executeScript("return window.screen.height").toString());//864
+					maxH = scrollHeight-screenHeight;
+					log.info("页面高度："+scrollHeight+"-"+screenHeight+"="+maxH);
+				} catch (Exception e) {
+					log.error("数字转换出错");
+				}
 				while(curH < maxH){
 					curH += 200+new Random().nextInt(400);
-					JavascriptExecutor driver_js= (JavascriptExecutor) dr;
 					String js = "window.scrollTo(0,"+curH+")";
 					log.info("执行js："+js);
 					driver_js.executeScript(js);
 					scrollCount++;
 					DelayUtil.delay(1000, 2000);
 				}
-				if(scrollCount >= 2){
+				if(scrollCount >= 1){
 					ConfigParam.success_complete_count.incrementAndGet();
 					JdbcUtil.insert(proxyHost, 30);
 				}
