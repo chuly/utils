@@ -29,7 +29,7 @@ public class JdbcUtil {
 			con = DriverManager.getConnection(ConfigParam.mysql_url);
 			String insertSQL = "INSERT INTO t_http_proxy (ip, port,ori_url,addr,can_use) "
 					+ "VALUES(?,?,?,?,1)";
-			insertPstmt = con.prepareStatement(insertSQL);
+			insertPstmt = con.prepareStatement(insertSQL,Statement.RETURN_GENERATED_KEYS);
 			String updateSQL = "update t_http_proxy set ";
 		} catch (Exception e) {
 			log.error("数据库连接失败", e);
